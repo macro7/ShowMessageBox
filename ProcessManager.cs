@@ -256,33 +256,7 @@ namespace ShowMessageBox.Utils
             }
         }
 
-        #region 内存回收
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="process"></param>
-        /// <param name="minSize"></param>
-        /// <param name="maxSize"></param>
-        /// <returns></returns>
-        [DllImport("kernel32.dll", EntryPoint = "SetProcessWorkingSetSize")]
-        public static extern int SetProcessWorkingSetSize(IntPtr process, int minSize, int maxSize);
-        /// <summary> 
-        /// 释放内存
-        /// </summary> 
-        public static void ClearMemory()
-        {
-            try
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-                {
-                    SetProcessWorkingSetSize(System.Diagnostics.Process.GetCurrentProcess().Handle, -1, -1);
-                }
-            }
-            catch { }
-        }
-        #endregion
+
 
 
         /// <summary>
@@ -341,6 +315,38 @@ namespace ShowMessageBox.Utils
             p.StartInfo.Arguments = "/s " + command;    //設定程式執行參數
             p.Start();   //啟動   
             return p.StandardOutput.ReadToEnd();        //從輸出流取得命令執行結果
+        }
+
+        #region 内存回收
+        /// <summary>
+        /// 释放内存
+        /// </summary>
+        /// <param name="process"></param>
+        /// <param name="minSize"></param>
+        /// <param name="maxSize"></param>
+        /// <returns></returns>
+        [DllImport("kernel32.dll", EntryPoint = "SetProcessWorkingSetSize")]
+        public static extern int SetProcessWorkingSetSize(IntPtr process, int minSize, int maxSize);
+        /// <summary> 
+        /// 释放内存
+        /// </summary> 
+        public static void GCCollect()
+        {
+            try
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                {
+                    SetProcessWorkingSetSize(System.Diagnostics.Process.GetCurrentProcess().Handle, -1, -1);
+                }
+            }
+            catch { }
+        }
+        #endregion
+        internal static void ClearMemory()
+        {
+            GCCollect();
         }
     }
 }
